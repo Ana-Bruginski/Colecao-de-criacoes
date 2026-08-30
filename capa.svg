@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Galeria de Projetos, um acervo pessoal em formato de museu">
+
+    <rect x="0" y="0" width="1200" height="300" fill="#FBFAF7"/>
+    <rect x="22" y="22" width="1156" height="256" fill="#FFFFFF" stroke="#DCDAD3" stroke-width="1"/>
+    <rect x="48" y="48" width="1104" height="204" fill="none" stroke="#DCDAD3" stroke-width="1"/>
+
+    <text x="600" y="146" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="58" fill="#1B1A17">Galeria de Projetos</text>
+    <text x="600" y="182" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="18" fill="#6E6C66">um acervo pessoal, em formato de museu</text>
+
+</svg>
