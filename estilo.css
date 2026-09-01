@@ -1,0 +1,206 @@
+/* ============================================================
+   ESTILO  estilo.css
+   ============================================================ */
+
+:root{
+  --papel:#FBFAF7;
+  --tela:#FFFFFF;
+  --linha:#DCDAD3;
+  --tinta:#1B1A17;
+  --cinza:#6E6C66;
+  --claro:#9A9891;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{height:100%}
+
+body{
+  font-family:"Spectral",Times,"Times New Roman",serif;
+  font-weight:300;
+  font-size:16px;
+  line-height:1.7;
+  color:var(--tinta);
+  background:var(--papel);
+  display:grid;
+  grid-template-rows:1fr auto;
+  overflow:hidden;
+}
+
+::selection{background:var(--linha)}
+
+a{color:inherit;text-decoration:none;border-bottom:1px solid var(--linha)}
+a:hover{border-bottom-color:var(--tinta)}
+:focus-visible{outline:1px solid var(--tinta);outline-offset:3px}
+
+/* ---- salao ---- */
+
+.salao{
+  display:grid;
+  grid-template-columns:1.2fr 1.1fr 0.8fr;
+  min-height:0;
+}
+
+.coluna{
+  overflow-y:auto;
+  border-right:1px solid var(--linha);
+  padding:0 22px 60px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--linha) transparent;
+}
+.coluna:last-child{border-right:0}
+.coluna::-webkit-scrollbar{width:7px}
+.coluna::-webkit-scrollbar-thumb{background:var(--linha)}
+
+.barra{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--papel);
+  border-bottom:1px solid var(--linha);
+  padding:13px 0 11px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-size:18px;
+  color:var(--cinza);
+}
+.barra span:last-child{color:var(--claro);font-size:15px}
+
+/* ---- salas (abas) ---- */
+
+.salas{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0 18px;
+  border-bottom:1px solid var(--linha);
+  margin-bottom:26px;
+}
+.salas button{
+  background:none;
+  border:0;
+  border-bottom:1px solid transparent;
+  margin-bottom:-1px;
+  padding:15px 0 12px;
+  font:inherit;
+  font-size:18px;
+  color:var(--claro);
+  cursor:pointer;
+}
+.salas button:hover{color:var(--cinza)}
+.salas button[aria-selected="true"]{
+  color:var(--tinta);
+  font-style:italic;
+  border-bottom-color:var(--tinta);
+}
+
+.convite{
+  color:var(--claro);
+  font-style:italic;
+  padding-top:6px;
+  max-width:34ch;
+}
+
+/* ---- obras na parede ---- */
+
+.obra{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:none;
+  border:0;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  margin-bottom:44px;
+  padding:0;
+}
+
+.moldura{
+  background:var(--tela);
+  border:1px solid var(--linha);
+  padding:14px;
+  transition:border-color .18s ease;
+}
+.obra:hover .moldura,
+.obra[aria-current="true"] .moldura{border-color:var(--tinta)}
+
+.tela{
+  border:1px solid var(--linha);
+  aspect-ratio:4/3;
+  background:#FCFCFA center/contain no-repeat;
+  position:relative;
+}
+.tela.vazia{
+  background-image:linear-gradient(to bottom right,transparent calc(50% - .5px),var(--linha) 50%,transparent calc(50% + .5px));
+}
+.tela.vazia::after{
+  content:attr(data-rotulo);
+  position:absolute;
+  left:8px;
+  bottom:6px;
+  font-size:13px;
+  color:var(--claro);
+}
+
+.cartela{margin-top:11px}
+.cartela .n{color:var(--claro);font-size:14px}
+.cartela .t{font-style:italic;font-weight:400}
+.cartela .s,
+.cartela .f{color:var(--cinza)}
+.cartela .mais{color:var(--claro);font-size:14px;margin-top:6px}
+.obra:hover .cartela .mais{color:var(--tinta)}
+
+/* ---- sala da obra ---- */
+
+.sala .destaque{margin-bottom:16px}
+.sala .destaque .tela{aspect-ratio:16/10}
+.sala h1{font-size:26px;font-weight:400;font-style:italic;line-height:1.3;margin-bottom:3px}
+.sala .meta{color:var(--cinza);margin-bottom:20px}
+.sala .texto p{margin-bottom:13px;max-width:52ch}
+.sala .extras{margin-top:26px;display:grid;gap:14px}
+
+/* ---- coluna pessoal ---- */
+
+.bloco{
+  border-top:1px solid var(--linha);
+  padding-top:11px;
+  margin-top:24px;
+}
+.bloco:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.bloco h2{font-size:16px;font-weight:400;font-style:italic;color:var(--cinza);margin-bottom:7px}
+.bloco p{margin-bottom:11px;max-width:44ch}
+.indice{display:grid;gap:3px}
+.indice button{
+  background:none;border:0;padding:0;font:inherit;color:inherit;
+  cursor:pointer;text-align:left;display:flex;justify-content:space-between;gap:12px;
+}
+.indice button:hover{font-style:italic}
+.indice button span:last-child{color:var(--claro);font-size:14px}
+.contatos{display:grid;gap:3px}
+.contatos div{display:flex;justify-content:space-between;gap:12px}
+.contatos span{color:var(--claro)}
+
+/* ---- rodape ---- */
+
+.rodape{
+  border-top:1px solid var(--linha);
+  padding:10px 22px;
+  font-size:15px;
+  color:var(--claro);
+  display:flex;
+  justify-content:space-between;
+}
+
+.topo{padding-top:26px}
+
+@media (max-width:860px){
+  html,body{height:auto;overflow:visible}
+  body{display:block}
+  .salao{grid-template-columns:1fr}
+  .coluna{overflow:visible;border-right:0;border-bottom:1px solid var(--linha);padding-bottom:40px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
