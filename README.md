@@ -2,7 +2,7 @@
 
 <img src="capa.svg" width="720" alt="Galeria de Projetos">
 
-<br><br>
+<br>
 
 ✦
 
@@ -19,6 +19,6 @@
 
 <br>
 
-<sub>Ana Bruginski &nbsp;·&nbsp; Curitiba &nbsp;·&nbsp; 2026</sub>
+<sub>Ana Bruginski &nbsp;·&nbsp; 2026</sub>
 
 </div>
