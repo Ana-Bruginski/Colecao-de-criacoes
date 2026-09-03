@@ -1,45 +1,41 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ana Bruginski — Galeria de Projetos</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="estilo.css">
-</head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coleção de Criações — Ana Bruginski</title>
+<meta name="description" content="Um museu virtual pessoal. Cada sala é um tema, cada obra pendurada é um projeto ou uma conquista.">
+<link rel="icon" href="capa.svg">
 
+<link rel="preload" href="img/fontes/eb-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="img/fontes/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/espaco.css">
+<link rel="stylesheet" href="css/saguao.css">
+<link rel="stylesheet" href="css/sala.css">
+<link rel="stylesheet" href="css/obra.css">
+</head>
 <body>
 
+<!-- Nenhuma sala e nenhuma obra são escritas aqui. Tudo vem de dados/museu.json. -->
+<main id="museu" class="museu" aria-label="Coleção de Criações"></main>
 
-<div class="salao">
+<div class="vinheta" aria-hidden="true"></div>
+<div class="granulado" aria-hidden="true"></div>
 
-    <section class="coluna" aria-label="Galeria de Projetos">
-        <div class="barra"><span>Galeria de Projetos</span><span id="contagem"></span></div>
-        <div class="salas" id="salas" role="tablist" aria-label="Salas"></div>
-        <div id="parede"></div>
-    </section>
+<p id="aviso-vivo" class="so-leitor" role="status" aria-live="polite"></p>
 
-    <section class="coluna sala" aria-label="Obra" aria-live="polite">
-        <div class="barra"><span>Obra</span><span id="rotuloObra"></span></div>
-        <div id="sala" class="topo"></div>
-    </section>
+<noscript>
+  <p class="sem-js">Este museu precisa de JavaScript para montar as salas.</p>
+</noscript>
 
-    <section class="coluna" aria-label="Sobre">
-        <div class="barra"><span>Ana Bruginski</span><span>Curitiba</span></div>
-        <div id="perfil" class="topo"></div>
-    </section>
-
-</div>
-
-<footer class="rodape">
-    <span>© Ana Bruginski 2026</span>
-    <span>Tudo que eu fiz até aqui</span>
-</footer>
-
-<script src="conteudo.js"></script>
-<script src="app.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/espaco.js"></script>
+<script src="js/sala.js"></script>
+<script src="js/obra.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/main.js"></script>
 
 </body>
 </html>
