@@ -1,0 +1,313 @@
+/* ============================================================
+   SALA  layout da parede, etiquetas, navegação lateral
+
+   A parede é mais larga que a tela e a câmera anda por ela. O
+   que se move é a caixa inteira — parede, laterais, piso e teto
+   viajam juntos, porque estão no mesmo espaço 3D. Se só as
+   imagens deslizassem, a ilusão morria (briefing 3.2).
+
+   A referência é uma galeria clara: muita parede vazia em volta
+   de cada obra, tamanhos bem diferentes entre vizinhas, e uma
+   etiqueta pequena ao lado de cada uma, todas na mesma linha.
+   ============================================================ */
+
+/* ---------- 1. a parede percorrível ---------- */
+
+.sala-espaco{
+  /* A etiqueta também está na parede e encolhe com ela, então é
+     dimensionada para o tamanho que precisa ter DEPOIS da
+     perspectiva — daí parecer grande demais medida no código. */
+  --plaq-larg: clamp(150px, 12vw, 210px);
+  --vao-obras: calc(var(--plaq-larg) + clamp(64px, 7vw, 145px));
+  /* espaço reservado no começo da parede para a placa da sala */
+  --placa-vao: clamp(210px, 19vw, 320px);
+  /* teto de largura, para obra panorâmica não virar mural */
+  --tela-max:min(38vw, 520px);
+}
+
+/* A fileira dita a largura da parede, então ela reserva as duas
+   pontas: à esquerda a placa da sala, que fica junto da entrada,
+   e à direita a etiqueta da última obra. */
+.sala-espaco .obras{
+  padding-left:calc(var(--placa-vao) + clamp(40px, 4.5vw, 96px));
+  padding-right:calc(var(--plaq-larg) + clamp(44px, 4.5vw, 100px));
+}
+
+.sala-espaco .sala-plaqueta{
+  max-width:var(--placa-vao);
+}
+
+/* ---------- 2. etiqueta de cada obra ---------- */
+
+/* Fica fora da caixa da obra, à direita, e todas na MESMA linha:
+   `top:50%` é o eixo comum de pendura, que é igual para todo
+   quadro, então um deslocamento fixo a partir dali alinha a
+   fileira de etiquetas como museu faz de verdade.
+
+   É absoluta de propósito: se entrasse no fluxo, o centro que se
+   alinha no eixo passaria a ser o do conjunto moldura+etiqueta, e
+   a fileira perderia o prumo. */
+.plaquinha{
+  position:absolute;
+  left:100%;
+  top:50%;
+  margin-left:clamp(20px, 2vw, 34px);
+  margin-top:clamp(8px, 1.6vh, 26px);
+  width:var(--plaq-larg);
+  padding:clamp(10px, 1vw, 15px) clamp(12px, 1.1vw, 17px);
+  background:var(--plaqueta);
+  color:var(--tinta);
+  text-align:left;
+  transform:translateZ(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px -1px var(--sombra-contato),
+    0 5px 9px -7px var(--sombra-difusa);
+}
+
+.plaquinha-titulo,
+.plaquinha-ano{
+  display:block;
+  font-family:var(--etiqueta);
+  text-transform:uppercase;
+}
+
+.plaquinha-titulo{
+  font-weight:500;
+  font-size:.92rem;
+  line-height:1.4;
+  letter-spacing:.12em;
+  overflow-wrap:break-word;
+  hyphens:auto;
+  -webkit-hyphens:auto;
+}
+
+.plaquinha-ano{
+  margin-top:.5em;
+  font-size:.82rem;
+  line-height:1;
+  letter-spacing:.18em;
+  color:color-mix(in srgb, var(--tinta) 52%, transparent);
+}
+
+/* ---------- 3. sala vazia ---------- */
+
+.sala-vazia{
+  position:absolute;
+  left:50%; top:var(--eixo);
+  transform:translate(-50%,-50%) translateZ(4px);
+  max-width:26ch;
+  margin:0;
+  padding:clamp(16px,2vw,26px) clamp(20px,2.4vw,32px);
+  background:var(--plaq-fundo);
+  color:var(--plaq-tinta);
+  font-family:var(--display);
+  font-style:italic;
+  font-size:clamp(.92rem,1.3vw,1.08rem);
+  line-height:1.5;
+  text-align:center;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px -1px var(--sombra-contato),
+    0 10px 18px -12px var(--sombra-difusa);
+}
+
+/* ---------- 4. interface da sala ---------- */
+
+/* Tudo aqui é de tela, não de parede: fica parado enquanto a
+   sala anda. São os únicos elementos que não vivem no 3D.
+   Sobre parede clara, a interface é escura — o inverso do que
+   era quando as salas eram de cor fechada. */
+
+.sala-ui{
+  position:absolute; inset:0;
+  z-index:12;
+  pointer-events:none;
+}
+.sala-ui > *{ pointer-events:auto }
+
+/* --- setas laterais, uma obra por vez --- */
+
+/* Traço fino e grande, como na referência: a seta é um desenho,
+   não um botão com fundo. Sem backdrop-filter, que reliaria e
+   desfocaria o fundo a cada quadro em que a parede anda. */
+.seta{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:clamp(52px, 5vw, 76px);
+  height:clamp(52px, 5vw, 76px);
+  display:grid;
+  place-items:center;
+  color:color-mix(in srgb, var(--tinta) 52%, transparent);
+  font-family:var(--display);
+  font-size:clamp(1.7rem, 2.6vw, 2.5rem);
+  line-height:1;
+  transition:color var(--t-hover) var(--curva),
+             opacity var(--t-hover) var(--curva);
+}
+.seta:hover{ color:var(--tinta) }
+.seta--esq{ left:clamp(8px, 1.6vw, 30px) }
+.seta--dir{ right:clamp(8px, 1.6vw, 30px) }
+.seta[disabled]{ opacity:0; pointer-events:none }
+
+/* --- botões de canto, em texto de parede --- */
+
+/* Os cantos de baixo caem sobre o piso de madeira, não sobre a
+   parede. Texto solto ali some. Viram etiquetas — a mesma peça das
+   obras — que se leem sobre qualquer fundo e continuam no
+   vocabulário do museu em vez de virarem botão de interface. */
+.botao-canto{
+  position:absolute;
+  display:inline-flex;
+  align-items:center;
+  min-height:52px;              /* alvo de toque (briefing 8) */
+  padding:15px 22px 14px;
+  background:var(--plaqueta);
+  color:color-mix(in srgb, var(--tinta) 68%, transparent);
+  font-family:var(--etiqueta);
+  font-size:.82rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px rgba(0,0,0,.28),
+    0 10px 20px -12px rgba(0,0,0,.6);
+  transition:color var(--t-hover) var(--curva);
+}
+.botao-canto:hover{ color:var(--tinta) }
+
+.botao-saguao{ left:clamp(16px, 3vw, 48px); bottom:clamp(16px, 3.5vh, 42px) }
+.botao-mapa  { right:clamp(16px, 3vw, 48px); bottom:clamp(16px, 3.5vh, 42px) }
+
+/* --- placas de orientação para a sala ao lado --- */
+
+/* Nos cantos de cima, longe das setas que percorrem a parede: uma
+   coisa leva a outra sala, a outra anda dentro desta. Confundir as
+   duas na mesma borda seria pedir clique errado. */
+.botao-sala{
+  gap:.7em;
+  top:clamp(16px, 3.5vh, 44px);
+}
+.botao-sala--esq{ left:clamp(16px, 3vw, 48px) }
+.botao-sala--dir{ right:clamp(16px, 3vw, 48px) }
+
+.botao-sala-marca{
+  font-family:var(--display);
+  font-size:1.5em;
+  line-height:.7;
+  letter-spacing:0;
+  color:color-mix(in srgb, var(--tinta) 46%, transparent);
+}
+
+/* --- contador de percurso --- */
+
+/* também cai sobre o piso: precisa do próprio contraste */
+.sala-conta{
+  position:absolute;
+  left:50%; bottom:clamp(20px, 4vh, 48px);
+  transform:translateX(-50%);
+  margin:0;
+  font-family:var(--etiqueta);
+  font-size:.8rem;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:rgba(252,250,246,.88);
+  text-shadow:0 1px 6px rgba(0,0,0,.8);
+  white-space:nowrap;
+}
+
+/* ---------- 5. a sala com uma obra aberta ---------- */
+
+/* A sala continua atrás, escurecida e desfocada (briefing 3.3).
+
+   O desfoque entra de uma vez, sem transição. Animar `filter` por
+   600ms obrigava o navegador a reborrar os megapixels da cena a
+   cada quadro — e isso caía exatamente em cima do voo da obra,
+   que é onde a fluidez mais importa. Aplicado de uma vez, é uma
+   rasterização só, e o véu da obra entrando por cima disfarça o
+   corte. */
+.sala-espaco.recuada .cena{
+  filter:blur(5px) brightness(.42);
+}
+.sala-espaco.sem-transicao .cena{ transition:none !important }
+
+.sala-espaco.recuada .sala-ui{
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 240ms var(--curva);
+}
+
+/* enquanto a obra viaja, o lugar dela na parede fica vazio */
+.obra.viajando{ visibility:hidden }
+
+/* ---------- 6. celular ---------- */
+
+/* Briefing 8: uma obra por vez, com um pedaço da próxima visível
+   na borda para o dedo saber que dá para arrastar. */
+@media (max-width:760px){
+  .sala-espaco{
+    --plaq-larg: clamp(80px, 23vw, 110px);
+    --vao-obras: calc(var(--plaq-larg) + clamp(26px, 8vw, 54px));
+    --placa-vao: clamp(120px, 34vw, 180px);
+    --tela-max: min(72vw, 430px);
+  }
+
+  .plaquinha{
+    margin-left:clamp(9px, 2.6vw, 15px);
+    margin-top:clamp(5px, 1.2vh, 14px);
+    padding:6px 8px;
+  }
+  .plaquinha-titulo{ font-size:.53rem; letter-spacing:.11em }
+  .plaquinha-ano  { font-size:.5rem }
+
+  .seta{
+    width:52px; height:52px;
+    font-size:1.7rem;
+  }
+  .seta--esq{ left:4px }
+  .seta--dir{ right:4px }
+
+  .botao-saguao{ left:14px; bottom:14px }
+  .botao-mapa  { right:14px; bottom:14px }
+  .sala-conta  { bottom:calc(14px + 46px) }
+
+  /* a placa migrou para a interface: some a perspectiva, fica o
+     mesmo objeto — etiqueta clara, serifada e caixa alta */
+  /* as placas de orientação ocupam os cantos de cima, então a placa
+     da sala desce para baixo delas */
+  /* nome de sala longo não pode empurrar a placa para fora da tela */
+  .botao-sala{
+    top:12px;
+    padding:11px 13px 10px;
+    font-size:.7rem;
+    max-width:44vw;
+    overflow:hidden;
+  }
+  .botao-sala > span:not(.botao-sala-marca){
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .botao-sala--esq{ left:12px }
+  .botao-sala--dir{ right:12px }
+
+  .sala-plaqueta--tela{
+    position:absolute;
+    left:12px;
+    top:74px;
+    transform:none;
+    max-width:60vw;
+    padding:11px 15px;
+  }
+  .sala-plaqueta--tela b{ font-size:1.25rem }
+  .sala-plaqueta--tela span{ font-size:.76rem }
+}
+
+/* ---------- 7. movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce){
+  .sala-espaco.recuada .sala-ui,
+  .seta,
+  .botao-canto{ transition:none !important }
+}

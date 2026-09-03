@@ -1,0 +1,592 @@
+/* ============================================================
+   ESPAÇO  perspectiva, paredes, piso, teto, rodapé, luz, moldura
+
+   A referência é uma galeria clara e bem iluminada: parede fosca
+   quase lisa, piso de carvalho claro, rodapé branco, luz macia e
+   uniforme, muita parede vazia em volta de cada obra.
+
+   Nenhuma superfície é uma cor só — mas a textura aqui é discreta,
+   como reboco pintado de perto, e não a mancha pesada de antes.
+
+   A caixa é 3D de verdade: cinco planos rotacionados com CSS
+   transforms. As obras são filhas do plano da parede, então a
+   perspectiva delas não é desenhada, é consequência.
+   ============================================================ */
+
+/* ---------- 1. o grão ---------- */
+
+/* Ruído com alfa, não com fundo cinza. Assim as duas escalas se
+   empilham no mesmo background sem precisar de background-blend-mode,
+   que é caro e aqui não é mais necessário: sobre parede clara o grão
+   trabalha por transparência.
+   Duas escalas porque uma só deixa o ladrilho legível no zoom. */
+
+:root{
+  --grao-fino: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.42'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)'/%3E%3C/svg%3E");
+
+  --grao-largo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.10'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='560' height='560' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ---------- 2. geometria da sala ---------- */
+
+.museu{
+  position:fixed; inset:0;
+  overflow:hidden;
+}
+
+.sala-espaco{
+  position:absolute; inset:0;
+
+  /* A parede fica a --prof de distância, então tudo que está nela
+     encolhe por perspectiva na razão --dist / (--dist + --prof).
+     Com 600 e 1150 isso era 0,66: uma etiqueta de 11px chegava na
+     tela com 7px, ilegível. Sala mais rasa e foco mais longo levam
+     a razão para ~0,76, e a tipografia da parede foi aumentada
+     junto para cobrir o resto. */
+  --prof:    clamp(280px, 34vw, 430px);   /* profundidade da sala */
+  --dist:    clamp(900px, 105vw, 1400px); /* distância focal do olho */
+  --olho:    47%;                         /* altura do olho na tela */
+  --largura-parede: 100vw;                /* o sala.js alarga conforme a fileira */
+  --eixo:    46%;                         /* eixo horizontal de pendura */
+  /* a maior obra ocupa perto de metade da altura da parede, que é
+     a proporção da referência; a etiqueta ao lado tem que parecer
+     pequena perto dela */
+  --alt-base: clamp(200px, 43vh, 460px);
+}
+
+.cena{
+  position:absolute; inset:0;
+  overflow:hidden;
+  background:#141210;
+  perspective: var(--dist);
+  perspective-origin: 50% var(--olho);
+}
+
+/* O percurso lateral NÃO passa por custom property. Trocar uma
+   custom property invalida o estilo da subárvore inteira, e o
+   navegador recalcula a sala toda a cada quadro: medido em 6,7ms
+   por quadro contra 0,12ms mexendo no transform direto. Quem anda
+   com a câmera é o sala.js, escrevendo transform neste elemento. */
+.caixa{
+  position:absolute; inset:0;
+  transform-style:preserve-3d;
+
+  /* A caixa é um contêiner de coordenadas, não uma superfície. O
+     box dela ocupa o viewport inteiro em z=0 e TODO o conteúdo está
+     em z negativo, atrás — então, com preserve-3d, ela ficava na
+     frente de tudo e engolia os cliques nas obras. Quem recebe
+     clique é a superfície, nunca o contêiner. */
+  pointer-events:none;
+}
+.plano{ pointer-events:auto }
+
+/* Os cinco planos. Cada um é uma superfície real inclinada,
+   não um trapézio desenhado com gradiente. */
+
+.plano{
+  position:absolute;
+  background-color:var(--parede);
+}
+
+/* O grão vive num pseudo-elemento: alfa simples, sem blend.
+   Forte o bastante para a parede não parecer cor chapada quando a
+   tela é ampliada em 200% — que é critério de aceite do briefing —
+   e fraco o bastante para continuar lendo como reboco pintado, e
+   não como a mancha de concreto de antes. */
+.plano::before{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background-image:var(--grao-fino), var(--grao-largo);
+  background-size:180px 180px, 560px 560px;
+  opacity:.85;
+}
+
+/* parede do fundo: mais larga que o viewport, para percorrer */
+.plano--fundo{
+  top:0; bottom:0;
+  left:50%;
+  width:var(--largura-parede);
+  margin-left:calc(var(--largura-parede) / -2);
+  transform: translateZ(calc(-1 * var(--prof)));
+  transform-style:preserve-3d;
+}
+
+/* laterais: nascem nas pontas da parede e vêm até o plano do olho */
+.plano--esq{
+  top:0; bottom:0;
+  left:50%;
+  margin-left:calc(var(--largura-parede) / -2);
+  width:var(--prof);
+  transform-origin:left center;
+  transform:rotateY(90deg);
+  background-color:var(--parede-esq);
+}
+.plano--dir{
+  top:0; bottom:0;
+  left:50%;
+  margin-left:calc(var(--largura-parede) / 2 - var(--prof));
+  width:var(--prof);
+  transform-origin:right center;
+  transform:rotateY(-90deg);
+  background-color:var(--parede-dir);
+}
+
+/* Com rotateY(90deg) e origem na borda esquerda, é a borda ESQUERDA
+   do elemento que fica perto do observador e a direita que encosta na
+   parede do fundo. Em galeria clara a queda é suave: a lateral recua
+   poucos por cento, não meia tonalidade. */
+.plano--esq::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg,
+    rgba(60,55,48,.30) 0%, rgba(60,55,48,.06) 62%, rgba(60,55,48,.14) 100%);
+}
+.plano--dir::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(270deg,
+    rgba(60,55,48,.30) 0%, rgba(60,55,48,.06) 62%, rgba(60,55,48,.14) 100%);
+}
+
+/* no teto, a borda de baixo é a que encosta na parede do fundo */
+.plano--teto{
+  left:50%;
+  width:var(--largura-parede);
+  margin-left:calc(var(--largura-parede) / -2);
+  top:0; height:var(--prof);
+  transform-origin:top center;
+  transform:rotateX(-90deg);
+  background-color:var(--parede-teto);
+}
+/* teto de galeria: claro e difuso, não a laje escura de antes */
+.plano--teto::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(to bottom,
+    rgba(28,25,22,.20) 0%, rgba(28,25,22,.07) 54%, rgba(28,25,22,0) 100%);
+}
+
+/* ---------- 3. piso ---------- */
+
+.plano--piso{
+  left:50%;
+  width:var(--largura-parede);
+  margin-left:calc(var(--largura-parede) / -2);
+  bottom:0; height:var(--prof);
+  transform-origin:bottom center;
+  transform:rotateX(90deg);
+
+  /* carvalho claro: a diferença entre tábuas vizinhas é mínima e
+     quem separa uma da outra é a junta, não o contraste de tom */
+  --tabua-a: color-mix(in srgb, var(--madeira) 96%, #FFF1D8);
+  --tabua-b: color-mix(in srgb, var(--madeira) 96%, #7A5A30);
+  --tabua-c: var(--madeira);
+  --tabua-d: color-mix(in srgb, var(--madeira) 93%, #7A5A30);
+  --junta:   color-mix(in srgb, var(--madeira) 74%, #4A331A);
+
+  background-color:var(--madeira);
+  background-image:
+    repeating-linear-gradient(90deg,
+      var(--tabua-a)   0     73px,
+      var(--junta)     74px  75px,
+      var(--tabua-c)   76px  137px,
+      var(--junta)     138px 139px,
+      var(--tabua-b)   140px 225px,
+      var(--junta)     226px 227px,
+      var(--tabua-d)   228px 281px,
+      var(--junta)     282px 283px,
+      var(--tabua-a)   284px 365px,
+      var(--junta)     366px 367px,
+      var(--tabua-c)   368px 433px,
+      var(--junta)     434px 435px);
+}
+
+/* veios esticados na direção das tábuas, por cima do desenho delas */
+.plano--piso::before{
+  background-image:var(--grao-fino);
+  background-size:46px 900px;
+  opacity:.34;
+}
+
+/* A borda de cima do piso é a que encosta no rodapé. Ali vão a
+   sombra de contato e o reflexo; daí para baixo o piso vem em
+   direção ao observador e escurece.
+   Sem filter: um blur de 0.4px é invisível a olho nu e mesmo assim
+   custa uma passada de filtro sobre 1,7 megapixel a cada quadro em
+   que a parede anda. Gradiente já nasce macio. */
+.piso-luz{
+  position:absolute; inset:0;
+  background:
+    /* sombra de contato do rodapé no piso: curta e macia */
+    linear-gradient(to bottom,
+      rgba(40,34,26,.34) 0%, rgba(40,34,26,.14) 4%, rgba(40,34,26,0) 11%),
+    /* reflexo muito sutil da parede na faixa junto ao rodapé */
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--parede) 22%, transparent) 0%,
+      color-mix(in srgb, var(--parede) 8%, transparent) 9%,
+      transparent 20%),
+    /* escurecimento em direção ao observador */
+    linear-gradient(to bottom,
+      rgba(40,34,26,0) 6%,
+      rgba(40,34,26,.12) 34%,
+      rgba(40,34,26,.30) 66%,
+      rgba(40,34,26,.48) 100%);
+}
+
+/* ---------- 4. parede do fundo: luz, sombra e rodapé ---------- */
+
+/* Luz de galeria: macia e quase uniforme. O foco dramático de antes
+   virava mancha na parede clara — aqui a luz só insinua de onde vem. */
+.parede-luz{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(255,250,238,.34) 0%,
+      rgba(255,250,238,.10) 26%,
+      rgba(255,250,238,0) 52%),
+    linear-gradient(to bottom,
+      rgba(0,0,0,0) 62%, rgba(52,45,36,.09) 100%);
+}
+
+/* Sombra de ambiente na junção parede-chão e nos cantos.
+   O desfoque está nas paradas do gradiente, não num filter: um
+   blur(6px) aqui filtrava 2,2 megapixels — a parede pode ter 3000px
+   de largura — para conseguir o que paradas a mais entregam de graça. */
+.parede-sombra{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(0,0,0,0) 70%,
+      color-mix(in srgb, var(--ambiente) 22%, transparent) 88%,
+      color-mix(in srgb, var(--ambiente) 55%, transparent) 100%),
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--ambiente) 55%, transparent) 0%,
+      rgba(0,0,0,0) 13%),
+    linear-gradient(270deg,
+      color-mix(in srgb, var(--ambiente) 55%, transparent) 0%,
+      rgba(0,0,0,0) 13%);
+  opacity:.5;
+}
+
+/* Rodapé branco, como na referência: faixa clara com quina de luz
+   em cima e uma sombra fina projetada na parede logo acima dela. */
+.rodape{
+  position:absolute; left:0; right:0; bottom:0;
+  height:clamp(22px, 3.8vh, 50px);
+  background:linear-gradient(to bottom,
+    #FCFBF8 0%,
+    #F4F1EA 62%,
+    #DFD9CD 100%);
+  box-shadow:
+    0 -5px 9px -5px rgba(52,45,36,.30),
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(0,0,0,.14);
+}
+
+/* ---------- 5. as obras na parede ---------- */
+
+/* Eixo horizontal comum: o centro de todo quadro cai na mesma
+   altura, qualquer que seja o tamanho dele. É assim que museu
+   pendura, e é o que faz a fileira parecer real. */
+.obras{
+  position:absolute;
+  left:50%;
+  top:var(--eixo);
+  width:max-content;
+  max-width:none;
+  transform:translate(-50%, -50%);
+  display:flex;
+  align-items:center;           /* <- o eixo horizontal comum */
+  justify-content:center;
+  gap:var(--vao-obras, clamp(26px, 4vw, 78px));
+}
+
+.obra{
+  position:relative;
+  flex:0 0 auto;
+  display:block;
+  transform:translateZ(9px);    /* o quadro sai da parede */
+  text-align:left;
+}
+
+/* Foco de luz sobre a parede em volta da obra. Em galeria clara ele
+   é quase imperceptível: só levanta um pouco a parede atrás do
+   quadro, sem desenhar elipse. */
+.obra::before{
+  content:"";
+  position:absolute;
+  inset:-52% -34%;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.7;
+  background:radial-gradient(ellipse at 50% 36%,
+    rgba(255,251,240,.42) 0%,
+    rgba(255,251,240,.14) 44%,
+    rgba(255,251,240,0) 72%);
+  transition:opacity var(--t-hover) var(--curva);
+}
+
+/* ---------- 6. moldura ---------- */
+
+/* Nenhuma moldura é uma borda de uma cor só. Todas são camadas
+   de box-shadow: filete externo, chanfro, luz vinda de cima,
+   sombra na quina de baixo. A sombra projetada é sempre dupla:
+   contato curta, difusa longa — e, sob luz de galeria, macia. */
+
+.quadro{
+  --moldura-larg:10px;
+  position:relative;
+  display:block;
+  padding:var(--moldura-larg);
+  background:#8A8A8A;
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 16px 26px -12px var(--sombra-difusa);
+  transition:box-shadow var(--t-hover) var(--curva);
+}
+
+.tela{
+  position:relative;
+  display:block;
+  overflow:hidden;
+
+  /* --proporcao e --razao dizem a mesma coisa de dois jeitos: a
+     primeira para o aspect-ratio, a segunda como número puro para
+     entrar em calc(). As duas saem da imagem real, no load. */
+  --razao:1.3333;
+  --tela-max:min(46vw, 620px);
+
+  /* A altura é a base do ritmo, a não ser que a obra seja larga
+     demais: aí quem manda é o teto de largura, e a altura desce
+     junto para a proporção não se perder. */
+  height:min(
+    calc(var(--alt-base) * var(--ritmo, 1)),
+    calc(var(--tela-max) / var(--razao))
+  );
+  width:auto;
+  aspect-ratio:var(--proporcao, 4 / 3);
+  background:var(--tela-lisa);
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,.22),
+    inset 0 2px 5px rgba(0,0,0,.18);
+}
+
+.tela img{
+  width:100%; height:100%;
+  object-fit:cover;
+}
+
+/* reflexo de vidro: brilho diagonal, bem abaixo de 6% */
+.tela::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:linear-gradient(112deg,
+    rgba(255,255,255,.05) 0%,
+    rgba(255,255,255,.02) 20%,
+    rgba(255,255,255,0) 42%);
+}
+
+/* obra sem imagem: fundo liso um tom mais escuro que a parede,
+   título centralizado em serifada dentro da moldura */
+.tela--texto{
+  display:grid;
+  place-items:center;
+  padding:clamp(14px, 2vw, 30px);
+  text-align:center;
+}
+.tela--texto span{
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(1.4rem, 2.2vw, 2.1rem);
+  line-height:1.24;
+  letter-spacing:.015em;
+  color:var(--tela-tinta);
+  text-wrap:balance;
+}
+
+/* --- catálogo de molduras (tokens do briefing 4.1 + oval) --- */
+
+.moldura-dourada-classica{
+  --moldura-larg:clamp(13px, 1.6vw, 26px);
+  background:
+    /* talha fina do douramento: sente-se, não se conta */
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.025) 0 3px, rgba(0,0,0,.022) 3px 7px),
+    linear-gradient(148deg,
+      #F2DFAE 0%, #B5904A 21%, #EEDBA4 39%,
+      #8B6D2F 61%, #E4CE95 81%, #9E7F3C 100%);
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 18px 30px -12px var(--sombra-difusa),
+    inset 0 0 0 2px rgba(255,248,222,.52),
+    inset 0 0 0 4px rgba(92,68,24,.5),
+    inset 0 4px 6px -2px rgba(255,250,232,.45),
+    inset 0 -4px 6px -2px rgba(66,48,14,.55);
+}
+
+.moldura-dourada-fina{
+  --moldura-larg:clamp(5px, .7vw, 10px);
+  background:linear-gradient(146deg,
+    #EAD6A2 0%, #B08B45 34%, #E2CB93 62%, #96772F 100%);
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 14px 24px -12px var(--sombra-difusa),
+    inset 0 0 0 1px rgba(255,248,222,.45),
+    inset 0 1px 2px rgba(255,250,232,.4),
+    inset 0 -1px 2px rgba(66,48,14,.45);
+}
+
+.moldura-madeira-escura{
+  --moldura-larg:clamp(9px, 1.1vw, 17px);
+  background:
+    /* veio da nogueira: irregular e discreto, não ripado */
+    repeating-linear-gradient(93deg,
+      rgba(255,255,255,.022) 0 2px,
+      rgba(0,0,0,.03) 2px 5px,
+      rgba(255,255,255,.012) 5px 11px,
+      rgba(0,0,0,.02) 11px 14px),
+    linear-gradient(140deg,
+      #5A4028 0%, #38260F 36%, #634829 60%, #2C1D0F 100%);
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 16px 26px -12px var(--sombra-difusa),
+    inset 0 0 0 1px rgba(255,236,204,.10),
+    inset 0 3px 5px -2px rgba(255,236,204,.16),   /* chanfro simples */
+    inset 0 -3px 5px -2px rgba(0,0,0,.55);
+}
+
+.moldura-fina-preta{
+  --moldura-larg:clamp(4px, .55vw, 8px);
+  background:linear-gradient(150deg, #26231F 0%, #131211 52%, #2E2A26 100%);
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 13px 22px -12px var(--sombra-difusa),
+    inset 0 0 0 1px rgba(255,255,255,.10);
+}
+
+/* Oval: moldura dourada de medalhão. A tela vira elipse junto,
+   senão a foto vaza pelos cantos da moldura. */
+.moldura-oval{
+  --moldura-larg:clamp(11px, 1.4vw, 21px);
+  border-radius:50%;
+  background:linear-gradient(150deg,
+    #F0DCA8 0%, #AF8A44 26%, #EBD6A0 48%, #8E7031 72%, #E0C98F 100%);
+  box-shadow:
+    0 2px 3px -1px var(--sombra-contato),
+    0 18px 30px -12px var(--sombra-difusa),
+    inset 0 0 0 2px rgba(255,248,222,.5),
+    inset 0 0 0 4px rgba(92,68,24,.45),
+    inset 0 3px 6px -2px rgba(255,250,232,.45),
+    inset 0 -3px 6px -2px rgba(66,48,14,.5);
+}
+.moldura-oval .tela{
+  border-radius:50%;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);
+}
+.moldura-oval .tela--texto{ padding:clamp(20px, 3vw, 44px) }
+
+/* hover: a luz sobre a obra intensifica, a sombra aprofunda (briefing 7) */
+.obra--interativa{ cursor:zoom-in }
+.obra--interativa:hover::before,
+.obra--interativa:focus-within::before{ opacity:1 }
+.obra--interativa:hover .quadro,
+.obra--interativa:focus-within .quadro{
+  box-shadow:
+    0 3px 5px -1px var(--sombra-contato),
+    0 24px 38px -12px var(--sombra-difusa);
+}
+
+/* ---------- 7. plaquinha da sala ---------- */
+
+/* Pendurada na parede, junto da entrada, e não sobreposta à tela:
+   por isso mora dentro do plano do fundo e ganha de graça a mesma
+   perspectiva das obras. O translateZ é a espessura da placa, que
+   é o que faz ela projetar sombra em vez de parecer adesivo. */
+.sala-plaqueta{
+  position:absolute;
+  left:clamp(14px, 3.4vw, 58px);
+  top:var(--eixo);
+  transform:translateY(-50%) translateZ(4px);
+  max-width:20ch;
+  padding:clamp(15px, 1.7vw, 24px) clamp(19px, 2.2vw, 30px);
+  background:var(--plaq-fundo);
+  color:var(--plaq-tinta);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 1px 2px -1px var(--sombra-contato),
+    0 9px 16px -10px var(--sombra-difusa);
+}
+.sala-plaqueta b{
+  display:block;
+  font-family:var(--display);
+  font-weight:500;
+  font-size:clamp(1.7rem, 3vw, 2.5rem);
+  line-height:1.14;
+  letter-spacing:.012em;
+}
+.sala-plaqueta span{
+  display:block;
+  margin-top:.55em;
+  font-family:var(--etiqueta);
+  font-size:.88rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--plaq-tinta) 58%, transparent);
+}
+
+/* ---------- 8. tela toda ---------- */
+
+/* Vinheta discreta: galeria clara não tem canto preto. */
+.vinheta{
+  position:fixed; inset:0; z-index:20;
+  pointer-events:none;
+  background:radial-gradient(136% 118% at 50% 46%,
+    rgba(0,0,0,0) 56%, rgba(0,0,0,.10) 82%, rgba(0,0,0,.22) 100%);
+}
+
+/* granulado global: costura todas as camadas numa fotografia só */
+.granulado{
+  position:fixed; inset:0; z-index:21;
+  pointer-events:none;
+  background-image:var(--grao-fino);
+  background-size:190px 190px;
+  opacity:.16;
+}
+
+/* ---------- 9. celular ---------- */
+
+/* Briefing 8: a câmera fica mais perto da parede. Sala mais rasa
+   e distância focal maior deixam a parede do fundo dominar, com as
+   laterais reduzidas a filetes — que é o que se vê de perto. */
+@media (max-width:760px){
+  .sala-espaco{
+    --prof:clamp(112px, 28vw, 200px);
+    --dist:clamp(620px, 165vw, 900px);
+    --alt-base:clamp(140px, 31vh, 260px);
+    --eixo:48%;
+  }
+
+  /* De perto a obra ocupa a largura toda da parede, então a placa
+     da sala não cabe ao lado dela. Sobe para a altura de uma placa
+     de entrada, acima da linha de pendura, e continua na parede. */
+  .sala-plaqueta{
+    top:15%;
+    left:clamp(12px, 4vw, 26px);
+    max-width:15ch;
+    transform:translateY(0) translateZ(4px);
+  }
+}
+
+@media (max-width:400px){
+  .sala-espaco{
+    --prof:104px;
+    --dist:640px;
+    --alt-base:clamp(126px, 28vh, 200px);
+  }
+}
+
+/* ---------- 10. movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce){
+  .quadro,
+  .obra::before{ transition:none !important }
+}

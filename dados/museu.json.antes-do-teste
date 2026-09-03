@@ -1,0 +1,114 @@
+{
+  "museu": {
+    "titulo": "Coleção de Criações",
+    "autora": "Ana Bruginski",
+    "abertura_pt": "Aqui fica tudo o que eu já fiz e tenho orgulho, misturado de propósito.",
+    "abertura_en": "Everything I have made and am proud of, deliberately mixed together.",
+    "cidade": "Curitiba",
+    "links": [
+      { "rotulo": "GitHub", "url": "https://github.com/Ana-Bruginski" },
+      { "rotulo": "LinkedIn", "url": "https://linkedin.com/in/SEU-USUARIO" },
+      { "rotulo": "E-mail", "url": "mailto:seuemail@exemplo.com" }
+    ]
+  },
+
+  "salas": [
+    {
+      "id": "codigo",
+      "nome_pt": "Código",
+      "nome_en": "Code",
+      "parede": "grafite",
+      "moldura": "fina-preta",
+      "obras": [
+        {
+          "titulo_pt": "MedXF",
+          "titulo_en": "MedXF",
+          "ano": "2025",
+          "tecnica_pt": "Java sobre Spring Boot",
+          "tecnica_en": "Java on Spring Boot",
+          "descricao_pt": "Sistema de triagem clínica para Síndrome do X Frágil. Escreva o que o projeto resolve, qual foi a parte difícil e o que você aprendeu fazendo.",
+          "link": { "rotulo": "Ver no GitHub", "url": "https://github.com/Ana-Bruginski" },
+          "imagens": [
+            { "src": "img/obras/medxf-1.png", "alt_pt": "Tela inicial do sistema MedXF" },
+            { "src": "img/obras/medxf-2.png", "alt_pt": "Painel do médico no MedXF" },
+            { "src": "img/obras/medxf-3.png", "alt_pt": "Painel do paciente no MedXF" }
+          ]
+        },
+        {
+          "titulo_pt": "e-PAF",
+          "ano": "2026",
+          "tecnica_pt": "Estágio sobre sistema fiscal",
+          "descricao_pt": "Trabalho no e-PAF durante o estágio na Receita Estadual do Paraná. Descreva o escopo do que você faz, sem entrar em dado sensível do órgão.",
+          "imagens": []
+        }
+      ]
+    },
+
+    {
+      "id": "faculdade",
+      "nome_pt": "Faculdade",
+      "nome_en": "University",
+      "parede": "verde-oliva",
+      "moldura": "madeira-escura",
+      "obras": [
+        {
+          "titulo_pt": "POLIWEEK",
+          "ano": "2026",
+          "tecnica_pt": "Organização sobre semana acadêmica",
+          "descricao_pt": "Organização da semana acadêmica da Escola Politécnica. Conte o tamanho do evento e o que ficou sob sua responsabilidade.",
+          "imagens": []
+        },
+        {
+          "titulo_pt": "CA Linus Torvalds",
+          "ano": "2026",
+          "tecnica_pt": "Vice-tesouraria sobre planilha",
+          "descricao_pt": "Gestão financeira do centro acadêmico de Ciência da Computação.",
+          "imagens": []
+        }
+      ]
+    },
+
+    {
+      "id": "cozinha",
+      "nome_pt": "Cozinha",
+      "nome_en": "Kitchen",
+      "parede": "terracota",
+      "moldura": "dourada-classica",
+      "obras": []
+    },
+
+    {
+      "id": "bale",
+      "nome_pt": "Balé",
+      "nome_en": "Ballet",
+      "parede": "bordo",
+      "moldura": "dourada-classica",
+      "obras": [
+        {
+          "titulo_pt": "Apresentação de fim de ano",
+          "ano": "2019",
+          "tecnica_pt": "Sapatilha sobre palco",
+          "descricao_pt": "O balé me deu disciplina e repertório, e isso aparece em tudo que eu faço depois. Vale contar quantos anos você dançou e o que ficou.",
+          "imagens": []
+        }
+      ]
+    },
+
+    {
+      "id": "natacao",
+      "nome_pt": "Natação",
+      "nome_en": "Swimming",
+      "parede": "azul-profundo",
+      "moldura": "dourada-fina",
+      "obras": [
+        {
+          "titulo_pt": "Prova dos 100 metros",
+          "ano": "2025",
+          "tecnica_pt": "Crawl sobre piscina de 25 metros",
+          "descricao_pt": "Registre o tempo, a prova, ou só o dia em que você decidiu voltar a nadar.",
+          "imagens": []
+        }
+      ]
+    }
+  ]
+}

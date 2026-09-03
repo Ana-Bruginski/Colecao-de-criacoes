@@ -1,0 +1,655 @@
+/* ============================================================
+   SAGUÃO  portais, abertura e planta do museu
+
+   O saguão é a mesma sala de sempre, só que neutra: parede de
+   gesso, piso de madeira, teto mais escuro. O que muda é o que
+   está pendurado — em vez de quadros, aberturas.
+
+   Um portal não é um card. É um buraco na parede: o interior é
+   mais escuro que o saguão, a espessura da parede aparece de um
+   lado só (o que aponta de volta para o olho) e a luz de dentro
+   escorre para o chão do saguão.
+   ============================================================ */
+
+/* O saguão é creme quente: a mesma parede fosca das salas, só que
+   um tom mais fechado. É o que faz a galeria parecer acender
+   quando se atravessa a porta, e dá corpo para o caixilho dourado
+   ter contra o que brilhar. */
+.saguao{
+  --parede:var(--gesso);
+  --parede-esq:color-mix(in srgb, var(--gesso) 92%, #4E463A);
+  --parede-dir:color-mix(in srgb, var(--gesso) 96%, #4E463A);
+  --tinta-saguao:var(--tinta);
+}
+
+.saguao .plano--teto{
+  background-color:color-mix(in srgb, var(--gesso) 76%, #BFB8AA);
+}
+
+/* luz de entrada: macia, vinda de cima, sem clarão */
+.saguao .parede-luz{
+  background:
+    linear-gradient(to bottom,
+      rgba(255,252,244,.32) 0%,
+      rgba(255,252,244,.09) 32%,
+      rgba(255,252,244,0) 60%),
+    linear-gradient(to bottom,
+      rgba(0,0,0,0) 64%, rgba(70,60,44,.12) 100%);
+}
+
+.saguao .parede-sombra{ opacity:.34 }
+
+/* No desktop este bloco vive dentro do plano da parede, então o
+   título e os portais ganham a perspectiva do saguão. No celular
+   ele migra para a raiz e vira uma coluna rolável — o JS troca o
+   pai, o CSS troca o layout. */
+/* Coluna, não posições absolutas. Com as portas maiores, texto e
+   placas passaram a se atropelar em janelas baixas; num fluxo o
+   espaço se distribui sozinho e nada colide em nenhuma altura. */
+.saguao-conteudo{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:clamp(14px, 3vh, 40px);
+  padding-top:clamp(20px, 6vh, 70px);
+}
+
+/* ---------- 1. texto de parede ---------- */
+
+/* Título e abertura ficam na parede, em perspectiva, como letra
+   aplicada em vinil — não flutuando sobre a tela. */
+.saguao-texto{
+  flex:0 0 auto;
+  margin:auto 0 0;               /* empurra o texto para o alto da coluna */
+  padding:0 clamp(20px, 6vw, 90px);
+  text-align:center;
+  transform:translateZ(3px);
+  color:var(--tinta-saguao);
+}
+
+.saguao-texto h1{
+  margin:0;
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(2.8rem, 7vw, 6rem);
+  line-height:1.02;
+  letter-spacing:.012em;
+  text-wrap:balance;
+}
+
+.saguao-autora{
+  margin:.42em 0 0;
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(1.3rem, 2.3vw, 1.9rem);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--tinta-saguao) 58%, transparent);
+}
+
+.saguao-abertura{
+  margin:1.25em auto 0;
+  max-width:44ch;
+  font-family:var(--display);
+  font-style:italic;
+  font-size:clamp(1.3rem, 1.9vw, 1.65rem);
+  line-height:1.5;
+  color:color-mix(in srgb, var(--tinta-saguao) 72%, transparent);
+  text-wrap:balance;
+}
+
+/* ---------- 2. os portais ---------- */
+
+/* A fileira encosta no rodapé: passagem começa no chão. Todos os
+   portais dividem o mesmo eixo horizontal (briefing 3.1). */
+/* Encostam no chão: passagem começa no piso e corta o rodapé,
+   como corta numa parede de verdade. */
+.portais{
+  flex:0 0 auto;
+  width:100%;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:var(--vao-portais, clamp(16px, 2.4vw, 46px));
+  padding:0 clamp(18px, 2.4vw, 48px);
+  z-index:3;                     /* acima do rodapé, que ele interrompe */
+}
+
+.portal{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(9px, 1vw, 15px);
+  flex:0 0 auto;
+  transform:translateZ(1px);
+}
+
+/* --- a abertura --- */
+
+.portal-vao{
+  order:2;                       /* a placa fica acima da passagem */
+  position:relative;
+  display:block;
+  overflow:hidden;
+  /* A porta quer ser grande, mas nunca mais larga do que a parte
+     que lhe cabe da parede. --n-salas vem do JS, então acrescentar
+     uma sala no JSON reparte o espaço em vez de transbordar. */
+  width:min(
+    clamp(150px, 17vw, 290px),
+    calc((94vw - (var(--n-salas, 5) - 1) * var(--vao-portais, 2.4vw)) / var(--n-salas, 5))
+  );
+  height:clamp(230px, 46vh, 470px);
+  background:var(--parede);
+  /* A boca do vão. A sombra que cai de dentro da verga é o que
+     separa buraco de retângulo pintado: forte no topo, longa, e
+     sem nenhum brilho na borda de baixo — buraco não tem quina. */
+  box-shadow:
+    inset 0 34px 40px -8px rgba(0,0,0,.78),
+    inset 0 0 22px 4px rgba(0,0,0,.42),
+    inset 0 0 0 1px rgba(0,0,0,.55);
+  transition:box-shadow var(--t-hover) var(--curva);
+}
+
+/* Interior: a parede daquela sala, acesa. Com o saguão em penumbra
+   a relação inverteu — o vão é mais CLARO que a parede em volta, e
+   é isso que faz dele uma passagem para um lugar iluminado. */
+/* O recorte é um trapézio: a boca do vão é o retângulo inteiro, e
+   o plano do fundo aparece menor e deslocado para o lado de quem
+   olha. É a convergência dessas arestas que faz o buraco ter
+   fundo — sombra chapada de lado não faz. */
+.portal-interior{
+  position:absolute; inset:0;
+  overflow:hidden;
+}
+/* A convergência é só no alto. Fechar também embaixo desenhava uma
+   cunha no canto do piso — geometricamente defensável, mas lê como
+   erro: o olho espera que o chão da passagem encoste reto na
+   soleira. Com a verga convergindo sozinha a profundidade continua
+   inteira e o canto fica limpo. */
+.portal--esq  .portal-interior{ clip-path:polygon(21% 6%, 100% 0, 100% 100%, 21% 100%) }
+.portal--dir  .portal-interior{ clip-path:polygon(0 0, 79% 6%, 79% 100%, 0 100%) }
+.portal--meio .portal-interior{ clip-path:polygon(9% 4%, 91% 4%, 91% 100%, 9% 100%) }
+
+.portal-parede{
+  position:absolute;
+  inset:0 0 26% 0;
+  background-color:color-mix(in srgb, var(--parede) 96%, #6B655A);
+  background-image:var(--grao-fino);
+  background-size:130px 130px;
+}
+
+.portal-piso{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:26%;
+  background:
+    /* a sombra que a verga joga no chão da sala, logo após a soleira */
+    linear-gradient(to bottom,
+      rgba(30,24,16,.46) 0%, rgba(30,24,16,.10) 34%, rgba(30,24,16,.28) 100%),
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--madeira) 96%, #FFF1D8) 0 13px,
+      color-mix(in srgb, var(--madeira) 72%, #4A331A) 13px 14px,
+      var(--madeira) 14px 29px,
+      color-mix(in srgb, var(--madeira) 72%, #4A331A) 29px 30px);
+}
+
+/* O vislumbre: a primeira obra daquela sala, pendurada lá dentro,
+   com a moldura dela. A moldura fica NÍTIDA — é ela que diz que
+   há um quadro ali — e só a imagem sai de foco: dá para ver que
+   tem obra sem dar para ver qual, que é o que faz a porta ser
+   convite em vez de vitrine. */
+.portal-obra{
+  position:absolute;
+  left:53%; top:40%;
+  width:46%;
+  aspect-ratio:4 / 3;
+  transform:translate(-50%,-50%);
+  padding:var(--moldura-larg);
+  --moldura-larg:clamp(4px, .55vw, 9px);
+  --sombra-contato:rgba(28,22,14,.55);
+  --sombra-difusa:rgba(28,22,14,.45);
+}
+.portal--dir .portal-obra{ left:47% }
+
+/* a tela dentro da moldura: é aqui que mora o desfoque, e o
+   recorte próprio impede que ele vaze por cima do dourado */
+.portal-tela{
+  display:block;
+  width:100%; height:100%;
+  overflow:hidden;
+  background:color-mix(in srgb, var(--parede) 76%, #6E675C);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);
+}
+.portal-tela img{
+  display:block;
+  width:100%; height:100%;
+  object-fit:cover;
+  /* o scale cobre a borda transparente que o blur come */
+  transform:scale(1.18);
+  filter:blur(clamp(4px, .6vw, 9px));
+}
+
+/* --- a espessura da parede: jamba, verga e soleira --- */
+
+/* Só uma jamba aparece: a face que aponta de volta para o olho.
+   Um vão à esquerda de quem entra revela a jamba esquerda. Ela é
+   trapézio, clara na boca — onde pega a luz do saguão — e escura
+   no fundo, onde já é sombra. */
+.portal-jamba{
+  position:absolute;
+  top:0; bottom:0;
+  width:21%;
+  z-index:2;
+}
+.portal--esq .portal-jamba{
+  left:0;
+  clip-path:polygon(0 0, 100% 6%, 100% 100%, 0 100%);
+  background:linear-gradient(90deg,
+    color-mix(in srgb, var(--gesso) 56%, #FFF) 0%,
+    color-mix(in srgb, var(--gesso) 86%, #000) 48%,
+    color-mix(in srgb, var(--gesso) 40%, #000) 100%);
+}
+.portal--dir .portal-jamba{
+  right:0;
+  clip-path:polygon(100% 0, 0 6%, 0 100%, 100% 100%);
+  background:linear-gradient(270deg,
+    color-mix(in srgb, var(--gesso) 56%, #FFF) 0%,
+    color-mix(in srgb, var(--gesso) 86%, #000) 48%,
+    color-mix(in srgb, var(--gesso) 40%, #000) 100%);
+}
+/* De frente aparecem as duas jambas, estreitas. Aqui são duas
+   faixas num gradiente só, com o miolo transparente: um polígono
+   com dois furos se fecharia sobre si mesmo e pintaria tudo. */
+.portal--meio .portal-jamba{
+  left:0; width:100%;
+  background:linear-gradient(90deg,
+    color-mix(in srgb, var(--gesso) 64%, #FFF) 0%,
+    color-mix(in srgb, var(--gesso) 40%, #000) 8.5%,
+    transparent 9%,
+    transparent 91%,
+    color-mix(in srgb, var(--gesso) 40%, #000) 91.5%,
+    color-mix(in srgb, var(--gesso) 64%, #FFF) 100%);
+}
+
+/* Verga: a face de baixo do lintel. Não pega luz nenhuma, é a
+   parte mais escura do vão e a que mais denuncia a espessura. */
+.portal-verga{
+  position:absolute;
+  top:0; left:0; right:0;
+  height:7%;
+  z-index:2;
+  background:linear-gradient(to bottom,
+    color-mix(in srgb, var(--gesso) 34%, #000) 0%,
+    color-mix(in srgb, var(--gesso) 14%, #000) 100%);
+}
+.portal--esq  .portal-verga{ clip-path:polygon(0 0, 100% 0, 100% 100%, 21% 100%) }
+.portal--dir  .portal-verga{ clip-path:polygon(0 0, 100% 0, 79% 100%, 0 100%) }
+.portal--meio .portal-verga{ clip-path:polygon(0 0, 100% 0, 91% 100%, 9% 100%) }
+
+/* soleira: a pedra do limiar, acesa pelos dois lados */
+.portal-soleira{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:2.8%;
+  z-index:3;
+  background:linear-gradient(to bottom,
+    color-mix(in srgb, var(--gesso) 28%, #000) 0%,
+    #CFC9BD 44%,
+    #918B7C 100%);
+}
+
+/* a luz da sala lambendo a boca do vão */
+.portal-vao::after{
+  content:"";
+  position:absolute; inset:0;
+  z-index:4;
+  pointer-events:none;
+  background:radial-gradient(120% 66% at 50% 104%,
+    color-mix(in srgb, var(--parede) 26%, transparent) 0%,
+    transparent 62%);
+}
+
+/* --- a luz que escorre para o chão do saguão --- */
+
+/* a luz da sala escorrendo pela soleira para o chão do saguão */
+.portal-luz{
+  position:absolute;
+  left:-20%; right:-20%;
+  bottom:-34px;
+  height:40px;
+  z-index:1;
+  pointer-events:none;
+  background:radial-gradient(66% 100% at 50% 0%,
+    color-mix(in srgb, var(--parede) 62%, transparent) 0%,
+    color-mix(in srgb, var(--parede) 22%, transparent) 42%,
+    transparent 78%);
+  opacity:.9;
+  transition:opacity var(--t-hover) var(--curva);
+}
+
+/* --- placa do portal --- */
+
+/* também está na parede, então é dimensionada para o tamanho que
+   precisa ter DEPOIS da perspectiva */
+.portal-placa{
+  order:1;
+  display:block;
+  padding:clamp(12px,1.3vw,18px) clamp(18px,1.8vw,26px);
+  background:var(--plaqueta);
+  color:var(--tinta);
+  text-align:center;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    0 1px 2px rgba(0,0,0,.26),
+    0 8px 14px -8px rgba(0,0,0,.5);
+}
+.portal-nome{
+  display:block;
+  font-family:var(--display);
+  font-weight:500;
+  font-size:clamp(1.5rem, 2.3vw, 2.1rem);
+  line-height:1.12;
+  letter-spacing:.012em;
+}
+.portal-conta{
+  display:block;
+  margin-top:.5em;
+  font-family:var(--etiqueta);
+  font-size:.86rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--tinta) 56%, transparent);
+}
+
+/* hover: a sala lá dentro acende um pouco e o dourado levanta */
+.portal:hover .portal-vao,
+.portal:focus-visible .portal-vao{
+  box-shadow:
+    inset 0 24px 32px -8px rgba(0,0,0,.5),
+    inset 0 0 18px 4px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(0,0,0,.45);
+}
+.portal:hover .portal-luz{ opacity:1 }
+
+/* sala sem obras: portal fechado, sem link (briefing 5) */
+.portal--fechado{ cursor:default }
+.portal--fechado .portal-vao{
+  background:color-mix(in srgb, var(--gesso) 82%, #6B6280);
+  box-shadow:
+    inset 0 0 0 1px rgba(60,52,74,.34),
+    inset 0 16px 28px -12px rgba(60,52,74,.36);
+}
+.portal--fechado .portal-interior,
+.portal--fechado .portal-parede,
+.portal--fechado .portal-piso,
+.portal--fechado .portal-obra,
+.portal--fechado .portal-verga,
+.portal--fechado .portal-soleira,
+.portal--fechado .portal-jamba,
+.portal--fechado .portal-luz{ display:none }
+.portal--fechado .portal-vao::after{
+  background:repeating-linear-gradient(45deg,
+    rgba(0,0,0,.05) 0 9px, rgba(0,0,0,0) 9px 18px);
+}
+
+/* ---------- 3. cantos do saguão ---------- */
+
+.saguao-rodape{
+  position:absolute;
+  left:0; right:0;
+  bottom:clamp(6px, 1.1vh, 14px);
+  z-index:12;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:clamp(18px, 2.6vw, 38px);
+  padding:0 16px;
+  font-family:var(--etiqueta);
+  font-size:.78rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  /* cai sobre o piso de madeira, não sobre a parede: precisa de
+     contraste próprio, senão some como sumiu */
+  color:rgba(252,250,246,.9);
+  text-shadow:0 1px 7px rgba(40,30,18,.85);
+}
+.saguao-rodape a{
+  color:inherit;
+  text-decoration:none;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  border-bottom:1px solid rgba(252,250,246,.4);
+  transition:color var(--t-hover) var(--curva),
+             border-color var(--t-hover) var(--curva);
+}
+.saguao-rodape a:hover{
+  color:#FFF;
+  border-color:rgba(255,255,255,.85);
+}
+
+/* alternador de idioma, discreto, no canto superior */
+/* Fica sobre o teto, que é escuro, então precisa de fundo próprio.
+   Vira uma plaquinha pequena — o mesmo vocabulário das etiquetas,
+   e não um botão de interface. */
+.idioma{
+  position:absolute;
+  right:clamp(14px, 2.6vw, 40px);
+  top:clamp(12px, 2.4vh, 30px);
+  z-index:14;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-height:52px;
+  padding:0 18px;
+  background:var(--plaqueta);
+  color:color-mix(in srgb, var(--tinta) 42%, transparent);
+  font-family:var(--etiqueta);
+  font-size:.82rem;
+  letter-spacing:.18em;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    0 1px 2px rgba(0,0,0,.3),
+    0 10px 18px -10px rgba(0,0,0,.6);
+  transition:color var(--t-hover) var(--curva);
+}
+.idioma b{
+  font-weight:500;
+  color:var(--tinta);
+}
+.idioma:hover{ color:color-mix(in srgb, var(--tinta) 72%, transparent) }
+
+/* ---------- 4. planta do museu ---------- */
+
+/* Desenhada como planta de arquiteto sobre papel: paredes grossas,
+   vãos de porta abertos no traço, cômodos nomeados. */
+
+.mapa{
+  position:fixed; inset:0;
+  z-index:30;
+  display:grid;
+  place-items:center;
+  padding:clamp(18px, 4vw, 48px);
+  background:rgba(12,10,9,.78);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+
+.mapa-folha{
+  width:min(880px, 100%);
+  max-height:100%;
+  overflow:auto;
+  padding:clamp(20px, 3.4vw, 42px);
+  background:var(--plaqueta);
+  color:var(--tinta);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.8),
+    0 30px 60px -20px rgba(0,0,0,.7);
+}
+
+.mapa-titulo{
+  margin:0 0 .2em;
+  font-family:var(--display);
+  font-weight:500;
+  font-size:clamp(1.3rem, 2.6vw, 1.9rem);
+  letter-spacing:.01em;
+}
+.mapa-legenda{
+  margin:0 0 clamp(18px, 2.4vw, 28px);
+  font-family:var(--etiqueta);
+  font-size:.58rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--tinta) 52%, transparent);
+}
+
+.mapa-planta{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(126px, 1fr));
+  gap:clamp(10px, 1.4vw, 18px);
+}
+
+/* cada cômodo: retângulo de parede grossa com o nome dentro */
+.comodo{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:5px;
+  min-height:clamp(96px, 13vw, 132px);
+  padding:clamp(10px,1.2vw,15px);
+  text-align:left;
+  background:color-mix(in srgb, var(--parede) 14%, var(--plaqueta));
+  border:3px solid var(--tinta);
+  transition:background var(--t-hover) var(--curva),
+             transform var(--t-hover) var(--curva);
+}
+.comodo:hover{
+  background:color-mix(in srgb, var(--parede) 30%, var(--plaqueta));
+}
+.comodo[aria-current="true"]{
+  background:color-mix(in srgb, var(--parede) 44%, var(--plaqueta));
+  box-shadow:inset 0 0 0 2px var(--plaqueta);
+}
+
+/* o vão de porta: um corte no traço da parede de baixo */
+.comodo::after{
+  content:"";
+  position:absolute;
+  left:50%; bottom:-3px;
+  width:34%; height:3px;
+  transform:translateX(-50%);
+  background:var(--plaqueta);
+}
+.comodo--fechado{
+  cursor:default;
+  border-style:dashed;
+  opacity:.62;
+}
+.comodo--fechado::after{ display:none }
+
+.comodo-nome{
+  font-family:var(--display);
+  font-weight:500;
+  font-size:clamp(.92rem, 1.5vw, 1.14rem);
+  line-height:1.14;
+}
+.comodo-conta{
+  font-family:var(--etiqueta);
+  font-size:.53rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--tinta) 56%, transparent);
+}
+
+/* o saguão ocupa a largura toda embaixo, como um átrio */
+.comodo--saguao{
+  grid-column:1 / -1;
+  min-height:clamp(62px, 8vw, 84px);
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  background:color-mix(in srgb, var(--madeira) 20%, var(--plaqueta));
+}
+.comodo--saguao::after{ display:none }
+
+.mapa-fechar{
+  margin-top:clamp(18px, 2.4vw, 26px);
+  min-height:44px;
+  padding:12px 2px 10px;
+  font-family:var(--etiqueta);
+  font-size:.62rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:color-mix(in srgb, var(--tinta) 66%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--tinta) 28%, transparent);
+}
+.mapa-fechar:hover{ color:var(--tinta); border-color:var(--tinta) }
+
+/* ---------- 5. celular ---------- */
+
+/* Briefing 8: as portas viram uma sequência vertical, cada uma
+   mantendo o recorte em perspectiva do interior da sala. */
+@media (max-width:760px){
+  /* a sala do saguão continua atrás, em perspectiva; o conteúdo
+     migra para uma coluna rolável na frente dela */
+  .saguao-conteudo{
+    z-index:10;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    background:linear-gradient(to bottom,
+      rgba(28,27,30,.72) 0%,
+      rgba(28,27,30,.94) 22%,
+      #1C1B1E 46%);
+  }
+
+  .saguao-texto{
+    position:static;
+    transform:none;
+    padding:clamp(54px, 9vh, 84px) 22px clamp(16px, 2.6vh, 28px);
+  }
+
+  /* cada porta continua sendo um recorte com profundidade,
+     só que empilhada (briefing 8) */
+  .portais{
+    position:static;
+    transform:none;
+    width:auto;
+    flex-direction:column;
+    align-items:stretch;
+    gap:clamp(20px, 3.4vh, 34px);
+    padding:0 clamp(20px, 6vw, 40px) clamp(24px, 4vh, 38px);
+  }
+
+  .portal{ align-items:stretch }
+  .portal-vao{
+    width:100%;
+    height:clamp(126px, 20vh, 190px);
+  }
+  .portal-placa{ align-self:flex-start }
+
+  /* fecha a coluna, em vez de flutuar sobre ela */
+  .saguao-rodape{
+    position:static;
+    padding:clamp(18px, 3vh, 28px) 20px clamp(26px, 5vh, 44px);
+    border-top:1px solid color-mix(in srgb, var(--tinta-saguao) 14%, transparent);
+    margin:0 clamp(20px, 6vw, 40px);
+  }
+
+  .idioma{ right:14px; top:12px }
+
+  .mapa-planta{ grid-template-columns:repeat(auto-fit, minmax(118px, 1fr)) }
+}
+
+/* ---------- 6. movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce){
+  .portal-vao,
+  .comodo,
+  .saguao-rodape a{ transition:none !important }
+}

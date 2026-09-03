@@ -1,0 +1,306 @@
+/* ============================================================
+   OBRA  a obra aberta em primeiro plano
+
+   Não é um modal. O quadro sai da parede e vem para a frente,
+   com a moldura junto — ela nunca some. A sala continua atrás,
+   escurecida e desfocada (briefing 3.3).
+
+   A referência é um fundo quase preto onde só a moldura tem luz:
+   contador grande em serifada, setas de traço fino nas bordas da
+   tela, e as obras vizinhas espiando pelos cantos, cortadas pelo
+   viewport — é isso que diz que existe uma parede continuando.
+   ============================================================ */
+
+.obra-aberta{
+  position:absolute; inset:0;
+  z-index:16;
+  display:grid;
+  grid-template-columns:minmax(0, 47fr) minmax(0, 41fr);
+  align-items:center;
+  gap:clamp(30px, 4vw, 84px);
+  /* as laterais são o espaço das obras vizinhas */
+  padding:clamp(28px, 5vh, 64px) clamp(104px, 11vw, 200px);
+}
+
+/* O véu é quase preto. Guarda só um sopro da cor da sala de onde
+   a obra saiu, senão o fundo denuncia que é uma tela só. */
+.obra-veu{
+  position:absolute; inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(128% 100% at 50% 42%,
+      color-mix(in srgb, var(--parede) 11%, #16151A) 0%,
+      #0B0A0C 74%);
+}
+
+/* ---------- 1. o palco ---------- */
+
+.obra-palco{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+}
+
+/* encolhe até a moldura, para o contador se encostar nela em vez
+   de flutuar no meio da coluna */
+.obra-moldura{
+  position:relative;
+  display:inline-block;
+  max-width:100%;
+}
+
+/* a moldura em primeiro plano: mesma peça da parede, maior */
+.obra-palco .quadro{
+  --alt-base:min(60vh, 30vw);
+  /* sob fundo preto a sombra é longa e macia, não escura e curta */
+  box-shadow:
+    0 6px 12px -4px rgba(0,0,0,.7),
+    0 36px 70px -20px rgba(0,0,0,.9);
+}
+.obra-palco .tela{
+  --tela-max:min(42vw, 700px);
+  --ritmo:1;
+}
+.obra-palco .tela img{
+  object-fit:contain;
+  background:#141316;
+}
+
+/* durante o voo o quadro é medido e transformado por JS */
+.obra-voando{
+  will-change:transform;
+  transform-origin:top left;
+}
+
+/* --- contador grande, como uma placa encostada na moldura --- */
+
+.obra-contador{
+  position:absolute;
+  left:calc(-1 * clamp(28px, 3.4vw, 62px));
+  top:clamp(10px, 3vh, 34px);
+  z-index:3;
+  margin:0;
+  padding:clamp(7px, .9vw, 13px) clamp(11px, 1.3vw, 19px);
+  background:var(--plaqueta);
+  color:var(--tinta);
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(1.5rem, 2.6vw, 2.4rem);
+  line-height:1;
+  letter-spacing:.01em;
+  white-space:nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 2px 4px rgba(0,0,0,.5),
+    0 18px 34px -18px rgba(0,0,0,.9);
+}
+
+/* --- setas de traço fino, encostadas na moldura --- */
+
+/* Ficam junto do quadro, e não nas bordas da tela: elas passam as
+   FOTOS desta obra. Na borda, a da direita caía em cima da obra
+   vizinha — dois destinos diferentes no mesmo lugar, confuso. */
+.obra-seta{
+  position:absolute;
+  top:50%;
+  z-index:4;
+  transform:translateY(-50%);
+  width:clamp(48px, 4.6vw, 68px);
+  height:clamp(48px, 4.6vw, 68px);
+  display:grid;
+  place-items:center;
+  color:rgba(246,240,228,.55);
+  font-family:var(--display);
+  font-size:clamp(1.7rem, 2.7vw, 2.5rem);
+  line-height:1;
+  transition:color var(--t-hover) var(--curva);
+}
+.obra-seta:hover{ color:#FFF }
+.obra-seta--esq{ left:calc(-1 * clamp(52px, 5vw, 76px)) }
+.obra-seta--dir{ right:calc(-1 * clamp(52px, 5vw, 76px)) }
+.obra-seta[disabled]{ opacity:0; pointer-events:none }
+
+/* --- as obras vizinhas, cortadas pela borda --- */
+
+/* Metade delas fica fora da tela. Não é decoração: é o que diz que
+   a parede continua para os dois lados. Clicar leva até ela. */
+.obra-vizinha{
+  position:absolute;
+  top:50%;
+  z-index:2;
+  display:block;
+  padding:0;
+  opacity:.3;
+  filter:brightness(.72);
+  transition:opacity var(--t-hover) var(--curva),
+             filter var(--t-hover) var(--curva);
+  cursor:pointer;
+}
+.obra-vizinha:hover,
+.obra-vizinha:focus-visible{ opacity:.55; filter:brightness(.95) }
+
+.obra-vizinha--esq{ left:0;  transform:translate(-56%, -50%) }
+.obra-vizinha--dir{ right:0; transform:translate( 56%, -50%) }
+
+.obra-vizinha .quadro{
+  --alt-base:min(38vh, 20vw);
+  box-shadow:0 20px 40px -20px rgba(0,0,0,.9);
+}
+.obra-vizinha .tela{
+  --tela-max:min(24vw, 340px);
+  --ritmo:1;
+}
+
+/* ---------- 2. a ficha ---------- */
+
+.ficha{
+  min-width:0;
+  max-width:60ch;
+  max-height:100%;
+  overflow-y:auto;
+  padding-right:10px;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 420ms var(--curva) 180ms,
+             transform 420ms var(--curva) 180ms;
+}
+.ficha.visivel{ opacity:1; transform:none }
+
+.ficha h2{
+  margin:0;
+  font-family:var(--display);
+  font-weight:400;
+  font-size:clamp(1.9rem, 4.2vw, 3.4rem);
+  line-height:1.06;
+  letter-spacing:.008em;
+  color:var(--plaqueta);
+  text-wrap:balance;
+}
+
+.ficha-ano{
+  margin:.5em 0 0;
+  font-family:var(--etiqueta);
+  font-size:.66rem;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:rgba(246,240,228,.5);
+}
+
+/* a "técnica", no vocabulário de museu: Java sobre Spring Boot */
+.ficha-tecnica{
+  margin:.55em 0 0;
+  font-family:var(--display);
+  font-style:italic;
+  font-size:clamp(1rem, 1.5vw, 1.22rem);
+  color:rgba(246,240,228,.82);
+}
+
+.ficha-descricao{
+  margin:1.5em 0 0;
+  padding-top:1.4em;
+  border-top:1px solid rgba(246,240,228,.14);
+  font-family:var(--display);
+  font-size:clamp(1rem, 1.25vw, 1.1rem);
+  line-height:1.66;
+  max-width:65ch;          /* briefing 4.3 */
+  color:rgba(246,240,228,.88);
+}
+
+.ficha-link{
+  display:inline-block;
+  margin-top:1.7em;
+  min-height:44px;
+  padding:13px 0 11px;
+  font-family:var(--etiqueta);
+  font-size:.64rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--plaqueta);
+  text-decoration:none;
+  border-bottom:1px solid rgba(246,240,228,.4);
+  transition:border-color var(--t-hover) var(--curva),
+             color var(--t-hover) var(--curva);
+}
+.ficha-link:hover{ color:#FFF; border-color:#FFF }
+
+/* ---------- 3. cantos ---------- */
+
+.obra-fechar{
+  position:absolute;
+  left:clamp(16px, 3vw, 48px);
+  top:clamp(16px, 3.5vh, 44px);
+  z-index:5;
+  min-height:44px;
+  padding:12px 2px 10px;
+  font-family:var(--etiqueta);
+  font-size:.62rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:rgba(246,240,228,.7);
+  border-bottom:1px solid rgba(246,240,228,.26);
+  transition:color var(--t-hover) var(--curva),
+             border-color var(--t-hover) var(--curva);
+}
+.obra-fechar:hover{ color:#FFF; border-color:rgba(255,255,255,.85) }
+
+/* ---------- 4. celular ---------- */
+
+/* Briefing 3.3 e 8: empilha, foto em cima, ficha embaixo,
+   setas sobre a foto, swipe entre as fotos. */
+@media (max-width:760px){
+  .obra-aberta{
+    grid-template-columns:1fr;
+    align-content:start;
+    gap:clamp(28px, 5vh, 44px);
+    padding:clamp(62px, 11vh, 88px) 20px 36px;
+    overflow-y:auto;
+  }
+
+  .obra-veu{ background:#0B0A0C }
+
+  /* de perto a obra ocupa quase a largura toda: o teto que segura
+     panorâmica no desktop não pode encolher a foto no celular */
+  .obra-palco .quadro{ --alt-base:min(40vh, 72vw) }
+  .obra-palco .tela { --tela-max:min(84vw, 540px) }
+
+  /* sem espaço para vizinhas espiando numa tela estreita */
+  .obra-vizinha{ display:none }
+
+  .obra-seta{
+    width:48px; height:48px;
+    font-size:1.6rem;
+  }
+  .obra-seta--esq{ left:6px }
+  .obra-seta--dir{ right:6px }
+
+  .obra-contador{
+    left:auto; right:0;
+    top:calc(-1 * clamp(14px, 3vh, 26px));
+    font-size:1.2rem;
+    padding:6px 10px;
+  }
+
+  .ficha{
+    max-height:none;
+    overflow:visible;
+    padding-right:0;
+  }
+
+  .obra-fechar{ left:20px; top:18px }
+}
+
+/* ---------- 5. movimento reduzido ---------- */
+
+/* briefing 7: os avanços viram cross-fade curto */
+@media (prefers-reduced-motion: reduce){
+  .ficha{
+    transition:opacity 200ms linear;
+    transform:none;
+  }
+  .obra-fechar,
+  .obra-seta,
+  .obra-vizinha,
+  .ficha-link{ transition:none !important }
+}
